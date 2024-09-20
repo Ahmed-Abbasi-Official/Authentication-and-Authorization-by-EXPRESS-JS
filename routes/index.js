@@ -22,7 +22,9 @@ router.get('/',(req,res)=>{
 
 
 router.get('/profile',isLoggedIn,(req,res)=>{
-  res.send('Welcome to Home Page :')
+  console.log(req.user.username);
+  
+  res.render('profile',{'name':req.user.username})
 })
 
 
@@ -34,19 +36,27 @@ router.get('/profile',isLoggedIn,(req,res)=>{
 
 
 
-router.post('/register',(req,res)=>{
-  var userData=new userModel({
-    username:req.body.username,
-    secret:req.body.secret
-  })
+router.post('/register', (req, res) => {
+  var userData = new userModel({
+    username: req.body.username,
+    secret: req.body.secret,
+  });
 
-  userModel.register(userData,req.body.password)
-  .then((registereduser)=>{
-    passport.authenticate('local')(req,res,()=>{
-      res.redirect('/profile')
+  userModel.register(userData, req.body.password)
+    .then((registeredUser) => {
+      passport.authenticate('local')(req, res, () => {
+        res.redirect('/profile');
+      });
     })
-  })
-})
+    .catch((err) => {
+      console.log(err);
+      res.redirect('/');
+    });
+});
+
+
+
+
 
 
 
@@ -73,7 +83,7 @@ router.post('/login',passport.authenticate('local',{
 
 
 
-router.get('logout',(req,res,next)=>{
+router.get('/logout',(req,res,next)=>{
   req.logout((error)=>{
     if(error) return next(error) ;
     res.redirect('/')
